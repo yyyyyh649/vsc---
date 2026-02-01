@@ -1,0 +1,69 @@
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+pip-wheel-metadata/
+
+# Python bytecode / build artifacts
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+*.dll
+*.egg-info/
+.eggs/
+build/
+dist/
+*.spec
+
+# Tool caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.pytype/
+.coverage
+htmlcov/
+.tox/
+.cache/
+
+# Jupyter
+.ipynb_checkpoints/
+*.nbconvert.ipynb
+.jupyter/
+
+# IDE/editor
+.vscode/
+.idea/
+
+# Data and generated outputs
+data/
+datasets/
+cache/
+outputs/
+reports/
+*.csv
+*.tsv
+*.parquet
+*.feather
+*.h5
+*.db
+*.sqlite
+*.sqlite3
+*.log
+*.tmp
+*.bak
+!data/README.md
+!datasets/README.md
+
+# Secrets
+.env
+.env.*
+*.env
+credentials/
+secrets/
+
+# OS cruft
+.DS_Store
+Thumbs.db

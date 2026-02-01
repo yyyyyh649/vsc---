@@ -48,7 +48,8 @@ def _clean_price_dataframe(df: pd.DataFrame, symbol: str) -> pd.DataFrame:
         }
     )
 
-    df["Date"] = pd.to_datetime(df["Date"]).dt.tz_localize(None)
+    # Normalize to date (naive) to reduce timezone drift across sources.
+    df["Date"] = pd.to_datetime(df["Date"]).dt.tz_localize(None).dt.normalize()
     df = df[["Date", "Open", "High", "Low", "Close", "Volume"]]
     df[["Open", "High", "Low", "Close", "Volume"]] = df[
         ["Open", "High", "Low", "Close", "Volume"]

@@ -20,7 +20,9 @@ class RotationConfig:
 def _prepare_prices(gold: pd.DataFrame, equity: pd.DataFrame) -> pd.DataFrame:
 	gold_series = gold.set_index("Date")["Close"].rename("GOLD")
 	equity_series = equity.set_index("Date")["Close"].rename("EQUITY")
-	prices = pd.concat([gold_series, equity_series], axis=1).sort_index().ffill().dropna()
+	# Align on overlapping trading days only to avoid holiday-induced forward fills.
+	prices = pd.concat([gold_series, equity_series], axis=1, join="inner").sort_index()
+	prices = prices.dropna()
 	return prices
 
 
@@ -60,25 +62,28 @@ def generate_signals(
 		"position_raw",
 	] = cfg.cash_symbol
 
-	position_series = pick_df["position_raw"].reindex(daily_ret.index).ffill()
-	position_series = position_series.fillna(cfg.cash_symbol)
+	# Decision signal at T (using T close), execution at T+1 to avoid look-ahead bias.
+	signal_series = pick_df["position_raw"].reindex(daily_ret.index).ffill()
+	signal_series = signal_series.fillna(cfg.cash_symbol)
 
-	# trading cost on switches
-	turnover = (position_series != position_series.shift(1)).astype(float)
+	exec_position = signal_series.shift(1).fillna(cfg.cash_symbol)
+
+	turnover = (exec_position != exec_position.shift(1).fillna(cfg.cash_symbol)).astype(float)
 	fee = turnover * (cfg.fee_bps / 10000.0)
 
 	gold_ret = daily_ret["GOLD"].rename("gold_ret")
 	equity_ret = daily_ret["EQUITY"].rename("equity_ret")
 
-	alloc_gold = (position_series == "GOLD").astype(float)
-	alloc_equity = (position_series == "EQUITY").astype(float)
+	alloc_gold = (exec_position == "GOLD").astype(float)
+	alloc_equity = (exec_position == "EQUITY").astype(float)
 
 	portfolio_ret = alloc_gold * gold_ret + alloc_equity * equity_ret
 	portfolio_ret = portfolio_ret - fee
 
 	return pd.DataFrame(
 		{
-			"position": position_series,
+			"signal": signal_series,
+			"position": exec_position,
 			"gold_ret": gold_ret,
 			"equity_ret": equity_ret,
 			"portfolio_ret": portfolio_ret,

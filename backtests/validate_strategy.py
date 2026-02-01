@@ -16,6 +16,7 @@ from src.data_fetcher import (
 	save_data,
 )
 from strategies.rotation_strategy import RotationConfig, generate_signals, performance_summary
+from adapters.variety_adapter import DummyAdapter
 
 
 def run_validation(
@@ -42,6 +43,10 @@ def run_validation(
 	print("Metrics:")
 	for k, v in metrics.items():
 		print(f"  {k}: {v:.4f}" if isinstance(v, float) else f"  {k}: {v}")
+
+	adapter = DummyAdapter()
+	quote_stub = adapter.fetch_quote(equity_symbol)
+	print("Adapter (stub) quote example:", quote_stub)
 
 
 if __name__ == "__main__":
